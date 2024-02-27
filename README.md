@@ -133,3 +133,18 @@ vagrant@vagrant:~/kube/zad7$ sudo microk8s enable nfs
 Addon nfs was not found in any repository
 To use the community maintained flavor enable the respective repository:
     microk8s enable community
+agrant@vagrant:~/kube/zad7$ sudo nano nfs-pvc.yaml
+vagrant@vagrant:~/kube/zad7$ kubectl apply -f nfs-pvc.yaml
+persistentvolumeclaim/nfs-pvc created
+vagrant@vagrant:~/kube/zad7$ sudo nano multitool-deployment.yaml
+vagrant@vagrant:~/kube/zad7$ vagrant@vagrant:~/kube/zad7$ kubectl apply -f multitool-deployment.yaml
+deployment.apps/multitool-deployment created
+
+vagrant@vagrant:~/kube/zad7$ kubectl get pods
+NAME                                   READY   STATUS    RESTARTS        AGE
+multitool-pod                          1/1     Running   71 (10m ago)    3d2h
+multitool-deployment-d56679c75-9k42v   0/1     Pending   0               2m31
+```
+```
+
+```
