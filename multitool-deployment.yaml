@@ -1,25 +1,48 @@
-apiVersion: apps/v1
+apiVersion : apps/v1
 kind: Deployment
 metadata:
-  name: multitool-deployment
+  name: multitool
+  labels:
+    app: main
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: multitool
+      app: main
   template:
     metadata:
       labels:
-        app: multitool
+        app: main
     spec:
       containers:
-      - name: multitool
-        image: wbitt/multitool
-        volumeMounts:
-        - name: nfs-volume
-          mountPath: /mnt/nfs
+        - name: busybox
+          image: busybox
+          command: ['sh', '-c', 'while true; do watch -n 5 date >> /my/data.txt; sleep 5; done']
+          volumeMounts:
+          - mountPath: /my
+            name: volume2
+        - name: multitool-deployment
+          image: wbitt/network-multitool
+          volumeMounts:
+          - mountPath: /my
+            name: volume2
+          env:
+          - name: HTTP_PORT
+            value: "80"
+          ports:
+          - containerPort: 80
+            name: http-port
+          resources:
+            requests:
+              cpu: "1m"
+              memory: "20Mi"
+            limits:
+              cpu: "10m"
+              memory: "20Mi"
       volumes:
-      - name: nfs-volume
+      - name: volume2
         persistentVolumeClaim:
-          claimName: nfs-pvc
+          claimName: pvc
+
+          
 
