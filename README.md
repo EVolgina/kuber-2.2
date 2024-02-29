@@ -2,8 +2,8 @@
 - Цель задания: В тестовой среде Kubernetes нужно создать PV и продемострировать запись и хранение файлов
 ## Задание 1
 - Что нужно сделать
-- Создать Deployment приложения, использующего локальный PV, созданный вручную. [local-pv](), [local-pvc]()
-- Создать Deployment приложения, состоящего из контейнеров busybox и multitool. [Deployment]()
+- Создать Deployment приложения, использующего локальный PV, созданный вручную. [local-pv](https://github.com/EVolgina/kuber-2.2/blob/main/local-pv.yaml), [local-pvc](https://github.com/EVolgina/kuber-2.2/blob/main/local-pvc.yaml)
+- Создать Deployment приложения, состоящего из контейнеров busybox и multitool. [Deployment](https://github.com/EVolgina/kuber-2.2/blob/main/app-deployment.yaml)
 - Создать PV и PVC для подключения папки на локальной ноде, которая будет использована в поде.
 - Продемонстрировать, что multitool может читать файл, в который busybox пишет каждые пять секунд в общей директории.
 - Удалить Deployment и PVC. Продемонстрировать, что после этого произошло с PV. Пояснить, почему.
@@ -167,6 +167,26 @@ Output: mount.nfs: access denied by server while mounting 10.0.2.15:/srv/nfs
   Normal  ExternalProvisioning  10s (x5 over 61s)  persistentvolume-controller  Waiting for a volume to be created either by the external provisioner 'nfs.csi.k8s.io' or manually by the system administrator. If volume creation is delayed, please verify that the provisioner is running and correctly registered.
 
 ```
+- Я запуталась во втором задании. Ни как не соображу какой адес нужно ставить
+  - parameters:
+  - server: 127.0.0.1
+  - share: /srv/nfs
 ```
+vagrant@vagrant:/srv/nfs$ kubectl cluster-info
+Kubernetes control plane is running at https://10.0.2.15:16443
+CoreDNS is running at https://10.0.2.15:16443/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
+
+To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
+vagrant@vagrant:/srv/nfs$ kubectl get services --all-namespaces
+NAMESPACE     NAME                        TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)                  AGE
+default       kubernetes                  ClusterIP   10.152.183.1     <none>        443/TCP                  25d
+kube-system   kube-dns                    ClusterIP   10.152.183.10    <none>        53/UDP,53/TCP,9153/TCP   25d
+kube-system   metrics-server              ClusterIP   10.152.183.59    <none>        443/TCP                  25d
+kube-system   kubernetes-dashboard        ClusterIP   10.152.183.110   <none>        443/TCP                  25d
+kube-system   dashboard-metrics-scraper   ClusterIP   10.152.183.252   <none>        8000/TCP                 25d
+default       my-service                  ClusterIP   10.152.183.48    <none>        9001/TCP,9002/TCP        5d4h
+default       my-service1                 NodePort    10.152.183.118   <none>        80:30080/TCP             5d
+default       svc-back                    ClusterIP   10.152.183.107   <none>        80/TCP                   4d7h
+default       svc-front                   ClusterIP   10.152.183.79    <none>        80/TCP                   4d7h
 
 ```
