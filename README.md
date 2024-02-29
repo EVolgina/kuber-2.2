@@ -129,21 +129,43 @@ Tue Feb 27 15:24:46 UTC 2024
 - Продемонстрировать возможность чтения и записи файла изнутри пода.
 - Предоставить манифесты, а также скриншоты или вывод необходимых команд.
 ```
-vagrant@vagrant:~/kube/zad7$ sudo microk8s enable nfs 
+vagrant@vagrant:~/kube/zad7$ microk8s enable nfs
 Addon nfs was not found in any repository
 To use the community maintained flavor enable the respective repository:
     microk8s enable community
-agrant@vagrant:~/kube/zad7$ sudo nano nfs-pvc.yaml
-vagrant@vagrant:~/kube/zad7$ kubectl apply -f nfs-pvc.yaml
-persistentvolumeclaim/nfs-pvc created
-vagrant@vagrant:~/kube/zad7$ sudo nano multitool-deployment.yaml
-vagrant@vagrant:~/kube/zad7$ vagrant@vagrant:~/kube/zad7$ kubectl apply -f multitool-deployment.yaml
-deployment.apps/multitool-deployment created
+vagrant@vagrant:~/kube/zad7$ microk8s kubectl get pods -n kube-system | grep nfs
+csi-nfs-node-5kdvx                           3/3     Running   1 (116m ago)    130m
+csi-nfs-controller-d96ccb59c-spqvp           4/4     Running   1 (128m ago)    130m
+vagrant@vagrant:~/kube/zad7$ kubectl apply -f multitool-deployment.yaml
+deployment.apps/multitool created
+vagrant@vagrant:~/kube/zad7$ kubectl apply -f - < pv-nfs.yaml
+storageclass.storage.k8s.io/nfs created
+vagrant@vagrant:~/kube/zad7$ kubectl apply -f - < nfs-pvc.yaml
+persistentvolumeclaim/pvc created
+vagrant@vagrant:~/kube/zad7$ kubectl describe pvc pvc
+Name:          pvc
+Namespace:     default
+StorageClass:  nfs
+Status:        Pending
+Volume:
+Labels:        <none>
+Annotations:   volume.beta.kubernetes.io/storage-provisioner: nfs.csi.k8s.io
+               volume.kubernetes.io/storage-provisioner: nfs.csi.k8s.io
+Finalizers:    [kubernetes.io/pvc-protection]
+Capacity:
+Access Modes:
+VolumeMode:    Filesystem
+Used By:       multitool-84c959cf7b-ssknl
+Events:
+  Type     Reason              Age                From                                                         Message
+  ----     ------              ----               ----                                                         -------
+  Normal   Provisioning        29s (x6 over 61s)  nfs.csi.k8s.io_vagrant_4d65c280-3d51-44be-9dca-5505606693f6  External provisioner is provisioning volume for claim "default/pvc"
+  Warning  ProvisioningFailed  29s (x6 over 61s)  nfs.csi.k8s.io_vagrant_4d65c280-3d51-44be-9dca-5505606693f6  failed to provision volume with StorageClass "nfs": rpc error: code = Internal desc = failed to mount nfs server: rpc error: code = Internal desc = mount failed: exit status 32
+Mounting command: mount
+Mounting arguments: -t nfs -o hard,nfsvers=4.1 10.0.2.15:/srv/nfs /tmp/pvc-b47f8e3b-91c8-401d-b1d1-297722e43dab
+Output: mount.nfs: access denied by server while mounting 10.0.2.15:/srv/nfs
+  Normal  ExternalProvisioning  10s (x5 over 61s)  persistentvolume-controller  Waiting for a volume to be created either by the external provisioner 'nfs.csi.k8s.io' or manually by the system administrator. If volume creation is delayed, please verify that the provisioner is running and correctly registered.
 
-vagrant@vagrant:~/kube/zad7$ kubectl get pods
-NAME                                   READY   STATUS    RESTARTS        AGE
-multitool-pod                          1/1     Running   71 (10m ago)    3d2h
-multitool-deployment-d56679c75-9k42v   0/1     Pending   0               2m31
 ```
 ```
 
