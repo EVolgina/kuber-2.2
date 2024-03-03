@@ -142,35 +142,14 @@ vagrant@vagrant:~/kube/zad7$ kubectl apply -f - < pv-nfs.yaml
 storageclass.storage.k8s.io/nfs created
 vagrant@vagrant:~/kube/zad7$ kubectl apply -f - < nfs-pvc.yaml
 persistentvolumeclaim/pvc created
-vagrant@vagrant:~/kube/zad7$ kubectl describe pvc pvc
-Name:          pvc
-Namespace:     default
-StorageClass:  nfs
-Status:        Pending
-Volume:
-Labels:        <none>
-Annotations:   volume.beta.kubernetes.io/storage-provisioner: nfs.csi.k8s.io
-               volume.kubernetes.io/storage-provisioner: nfs.csi.k8s.io
-Finalizers:    [kubernetes.io/pvc-protection]
-Capacity:
-Access Modes:
-VolumeMode:    Filesystem
-Used By:       multitool-84c959cf7b-ssknl
-Events:
-  Type     Reason              Age                From                                                         Message
-  ----     ------              ----               ----                                                         -------
-  Normal   Provisioning        29s (x6 over 61s)  nfs.csi.k8s.io_vagrant_4d65c280-3d51-44be-9dca-5505606693f6  External provisioner is provisioning volume for claim "default/pvc"
-  Warning  ProvisioningFailed  29s (x6 over 61s)  nfs.csi.k8s.io_vagrant_4d65c280-3d51-44be-9dca-5505606693f6  failed to provision volume with StorageClass "nfs": rpc error: code = Internal desc = failed to mount nfs server: rpc error: code = Internal desc = mount failed: exit status 32
-Mounting command: mount
-Mounting arguments: -t nfs -o hard,nfsvers=4.1 10.0.2.15:/srv/nfs /tmp/pvc-b47f8e3b-91c8-401d-b1d1-297722e43dab
-Output: mount.nfs: access denied by server while mounting 10.0.2.15:/srv/nfs
-  Normal  ExternalProvisioning  10s (x5 over 61s)  persistentvolume-controller  Waiting for a volume to be created either by the external provisioner 'nfs.csi.k8s.io' or manually by the system administrator. If volume creation is delayed, please verify that the provisioner is running and correctly registered.
-
+vagrant@vagrant:~/kube/zad7$ kubectl get pvc
+NAME      STATUS   VOLUME   CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+nfs-pvc   Bound    nfs-pv   1Gi        RWX            nfs-storage    10s
+vagrant@vagrant:~/kube/zad7$ kubectl get pv
+NAME                            CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                                  STORAGECLASS   REASON   AGE
+data-nfs-server-provisioner-0   1Gi        RWO            Retain           Bound    nfs-server-provisioner/data-nfs-server-provisioner-0                           46h
+nfs-pv                          1Gi        RWX            Retain           Bound    default/nfs-pvc                                        nfs-storage             26s
 ```
-- Я запуталась во втором задании. Ни как не соображу какой адес нужно ставить
-  - parameters:
-  - server: 127.0.0.1
-  - share: /srv/nfs
 ```
 vagrant@vagrant:/srv/nfs$ kubectl cluster-info
 Kubernetes control plane is running at https://10.0.2.15:16443
@@ -178,15 +157,17 @@ CoreDNS is running at https://10.0.2.15:16443/api/v1/namespaces/kube-system/serv
 
 To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
 vagrant@vagrant:/srv/nfs$ kubectl get services --all-namespaces
-NAMESPACE     NAME                        TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)                  AGE
-default       kubernetes                  ClusterIP   10.152.183.1     <none>        443/TCP                  25d
-kube-system   kube-dns                    ClusterIP   10.152.183.10    <none>        53/UDP,53/TCP,9153/TCP   25d
-kube-system   metrics-server              ClusterIP   10.152.183.59    <none>        443/TCP                  25d
-kube-system   kubernetes-dashboard        ClusterIP   10.152.183.110   <none>        443/TCP                  25d
-kube-system   dashboard-metrics-scraper   ClusterIP   10.152.183.252   <none>        8000/TCP                 25d
-default       my-service                  ClusterIP   10.152.183.48    <none>        9001/TCP,9002/TCP        5d4h
-default       my-service1                 NodePort    10.152.183.118   <none>        80:30080/TCP             5d
-default       svc-back                    ClusterIP   10.152.183.107   <none>        80/TCP                   4d7h
-default       svc-front                   ClusterIP   10.152.183.79    <none>        80/TCP                   4d7h
+vagrant@vagrant:~/kube/zad7$ kubectl get services --all-namespaces
+NAMESPACE                NAME                        TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)                                                                                                     AGE
+default                  kubernetes                  ClusterIP   10.152.183.1     <none>        443/TCP                                                                                                     28d
+kube-system              kube-dns                    ClusterIP   10.152.183.10    <none>        53/UDP,53/TCP,9153/TCP                                                                                      28d
+kube-system              metrics-server              ClusterIP   10.152.183.59    <none>        443/TCP                                                                                                     28d
+kube-system              kubernetes-dashboard        ClusterIP   10.152.183.110   <none>        443/TCP                                                                                                     28d
+kube-system              dashboard-metrics-scraper   ClusterIP   10.152.183.252   <none>        8000/TCP                                                                                                    28d
+default                  my-service                  ClusterIP   10.152.183.48    <none>        9001/TCP,9002/TCP                                                                                           8d
+default                  my-service1                 NodePort    10.152.183.118   <none>        80:30080/TCP                                                                                                8d
+default                  svc-back                    ClusterIP   10.152.183.107   <none>        80/TCP                                                                                                      7d7h
+default                  svc-front                   ClusterIP   10.152.183.79    <none>        80/TCP                                                                                                      7d7h
+nfs-server-provisioner   nfs-server-provisioner      ClusterIP   10.152.183.97    <none>        2049/TCP,2049/UDP,32803/TCP,32803/UDP,20048/TCP,20048/UDP,875/TCP,875/UDP,111/TCP,111/UDP,662/TCP,662/UDP   46h
 
 ```
