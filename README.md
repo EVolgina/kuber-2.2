@@ -149,6 +149,27 @@ vagrant@vagrant:~/kube/zad7$ kubectl get pv
 NAME                            CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                                  STORAGECLASS   REASON   AGE
 data-nfs-server-provisioner-0   1Gi        RWO            Retain           Bound    nfs-server-provisioner/data-nfs-server-provisioner-0                           46h
 nfs-pv                          1Gi        RWX            Retain           Bound    default/nfs-pvc                                        nfs-storage             26s
+vagrant@vagrant:~/kube/zad7$ kubectl get sc
+NAME                          PROVISIONER                            RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
+nfs-storage                   kubernetes.io/nfs                      Retain          Immediate              false                  2d23h
+nfs                           cluster.local/nfs-server-provisioner   Delete          Immediate              true                   2d22h
+microk8s-hostpath (default)   microk8s.io/hostpath                   Delete          WaitForFirstConsumer   false                  25h
+vagrant@vagrant:~/kube/zad7$ kubectl get pods -A
+NAMESPACE                NAME                                         READY   STATUS              RESTARTS          AGE
+default                  multitool-758994cbb6-lwtsw                   0/1     ContainerCreating   0                 26m
+kube-system              csi-nfs-node-5kdvx                           3/3     Running             4 (7m21s ago)     4d1h
+kube-system              hostpath-provisioner-7df77bc496-rnj86        1/1     Running             1 (7m30s ago)     25h
+nfs-server-provisioner   nfs-server-provisioner-0                     1/1     Running             1 (7m30s ago)     2d22h
+kube-system              kubernetes-dashboard-54b48fbf9-b4wq6         1/1     Running             33 (7m31s ago)    29d
+kube-system              dashboard-metrics-scraper-5657497c4c-6748c   1/1     Running             20 (7m31s ago)    29d
+kube-system              csi-nfs-controller-d96ccb59c-spqvp           4/4     Running             10 (4m52s ago)    4d1h
+kube-system              coredns-864597b5fd-5flhg                     1/1     Running             20 (7m30s ago)    29d
+kube-system              calico-kube-controllers-76c98cc5-t7mfl       1/1     Running             8 (7m21s ago)     9d
+kube-system              metrics-server-848968bdcd-7n9jf              1/1     Running             44 (7m21s ago)    29d
+kube-system              calico-node-sj2lr                            1/1     Running             13 (7m29s ago)    9d
+ingress                  nginx-ingress-microk8s-controller-csnhr      1/1     Running             1 (7m30s ago)     8d
+default                  multitool-pod                                1/1     Running             214 (7m29s ago)   9d
+default                  daemonset-l869k                              1/1     Running             1 (7m30s ago)     8d
 ```
 ```
 vagrant@vagrant:/srv/nfs$ kubectl cluster-info
@@ -172,4 +193,80 @@ nfs-server-provisioner   nfs-server-provisioner      ClusterIP   10.152.183.97  
 vagrant@vagrant:~/kube/zad7$ kubectl get services --namespace nfs-server-provisioner
 NAME                     TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                                                                                                     AGE
 nfs-server-provisioner   ClusterIP   10.152.183.97   <none>        2049/TCP,2049/UDP,32803/TCP,32803/UDP,20048/TCP,20048/UDP,875/TCP,875/UDP,111/TCP,111/UDP,662/TCP,662/UDP   46h
+```
+-несколько раз пересоздавала pv pvc удаляла pod. Не могу найти причину почему pod не поднимается
+```
+vagrant@vagrant:~/kube/zad7$ kubectl describe pvc nfs-pvc
+Name:          nfs-pvc
+Namespace:     default
+StorageClass:  nfs-storage
+Status:        Bound
+Volume:        nfs-pv
+Labels:        <none>
+Annotations:   pv.kubernetes.io/bind-completed: yes
+               pv.kubernetes.io/bound-by-controller: yes
+Finalizers:    [kubernetes.io/pvc-protection]
+Capacity:      1Gi
+Access Modes:  RWX
+VolumeMode:    Filesystem
+Used By:       multitool-758994cbb6-fgjzq
+Events:        <none>
+vagrant@vagrant:~/kube/zad7$ kubectl describe pod multitool-758994cbb6-fgjzq
+Name:             multitool-758994cbb6-fgjzq
+Namespace:        default
+Priority:         0
+Service Account:  default
+Node:             vagrant/10.0.2.15
+Start Time:       Mon, 04 Mar 2024 16:47:36 +0000
+Labels:           app=multitool
+                  pod-template-hash=758994cbb6
+Annotations:      <none>
+Status:           Pending
+IP:
+IPs:              <none>
+Controlled By:    ReplicaSet/multitool-758994cbb6
+Containers:
+  multitool:
+    Container ID:
+    Image:          wbitt/network-multitool
+    Image ID:
+    Port:           <none>
+    Host Port:      <none>
+    State:          Waiting
+      Reason:       ContainerCreating
+    Ready:          False
+    Restart Count:  0
+    Environment:    <none>
+    Mounts:
+      /srv/nfs from nfs-storage (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-n5bhd (ro)
+Conditions:
+  Type              Status
+  Initialized       True
+  Ready             False
+  ContainersReady   False
+  PodScheduled      True
+Volumes:
+  nfs-storage:
+    Type:       PersistentVolumeClaim (a reference to a PersistentVolumeClaim in the same namespace)
+    ClaimName:  nfs-pvc
+    ReadOnly:   false
+  kube-api-access-n5bhd:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    ConfigMapOptional:       <nil>
+    DownwardAPI:             true
+QoS Class:                   BestEffort
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type     Reason       Age    From               Message
+  ----     ------       ----   ----               -------
+  Normal   Scheduled    3m38s  default-scheduler  Successfully assigned default/multitool-758994cbb6-fgjzq to vagrant
+  Warning  FailedMount  93s    kubelet            MountVolume.SetUp failed for volume "nfs-pv" : mount failed: exit status 32
+Mounting command: mount
+Mounting arguments: -t nfs nfs-server-provisioner.default.svc.cluster.local:/srv/nfs /var/snap/microk8s/common/var/lib/kubelet/pods/905259c1-36cf-42d2-8acf-dc4d80391418/volumes/kubernetes.io~nfs/nfs-pv
+Output: mount.nfs: Connection timed out
 ```
