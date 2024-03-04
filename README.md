@@ -169,5 +169,7 @@ default                  my-service1                 NodePort    10.152.183.118 
 default                  svc-back                    ClusterIP   10.152.183.107   <none>        80/TCP                                                                                                      7d7h
 default                  svc-front                   ClusterIP   10.152.183.79    <none>        80/TCP                                                                                                      7d7h
 nfs-server-provisioner   nfs-server-provisioner      ClusterIP   10.152.183.97    <none>        2049/TCP,2049/UDP,32803/TCP,32803/UDP,20048/TCP,20048/UDP,875/TCP,875/UDP,111/TCP,111/UDP,662/TCP,662/UDP   46h
-
+vagrant@vagrant:~/kube/zad7$ kubectl get services --namespace nfs-server-provisioner
+NAME                     TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                                                                                                     AGE
+nfs-server-provisioner   ClusterIP   10.152.183.97   <none>        2049/TCP,2049/UDP,32803/TCP,32803/UDP,20048/TCP,20048/UDP,875/TCP,875/UDP,111/TCP,111/UDP,662/TCP,662/UDP   46h
 ```
