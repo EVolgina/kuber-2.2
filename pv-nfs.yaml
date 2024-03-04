@@ -12,4 +12,4 @@ spec:
   storageClassName: nfs-storage
   nfs:
     path: /srv/nfs
-    server: 10.1.52.162
+    server: nfs-server-provisioner.default.svc.cluster.local
