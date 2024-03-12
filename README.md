@@ -133,6 +133,8 @@ vagrant@vagrant:~/kube/zad7$ microk8s enable nfs
 Addon nfs was not found in any repository
 To use the community maintained flavor enable the respective repository:
     microk8s enable community
+vagrant@vagrant:~/kube/zad7$ dpkg -l | grep nfs-common
+ii  nfs-common                            1:1.3.4-2.5ubuntu3.5              amd64        NFS support files common to client and server
 vagrant@vagrant:~/kube/zad7$ microk8s kubectl get pods -n kube-system | grep nfs
 csi-nfs-node-5kdvx                           3/3     Running   1 (116m ago)    130m
 csi-nfs-controller-d96ccb59c-spqvp           4/4     Running   1 (128m ago)    130m
