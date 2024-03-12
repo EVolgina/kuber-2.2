@@ -129,49 +129,51 @@ Tue Feb 27 15:24:46 UTC 2024
 - Продемонстрировать возможность чтения и записи файла изнутри пода.
 - Предоставить манифесты, а также скриншоты или вывод необходимых команд.
 ```
-vagrant@vagrant:~/kube/zad7$ microk8s enable nfs
-Addon nfs was not found in any repository
-To use the community maintained flavor enable the respective repository:
-    microk8s enable community
 vagrant@vagrant:~/kube/zad7$ dpkg -l | grep nfs-common
 ii  nfs-common                            1:1.3.4-2.5ubuntu3.5              amd64        NFS support files common to client and server
+vagrant@vagrant:~/kube/zad7$ microk8s enable nfs
+Infer repository community for addon nfs
+Addon community/nfs is already enabled
 vagrant@vagrant:~/kube/zad7$ microk8s kubectl get pods -n kube-system | grep nfs
 csi-nfs-node-5kdvx                           3/3     Running   1 (116m ago)    130m
 csi-nfs-controller-d96ccb59c-spqvp           4/4     Running   1 (128m ago)    130m
+vagrant@vagrant:~/kube/zad7$ kubectl apply -f sc.yaml
+storageclass.storage.k8s.io/nfs-csi created
+vagrant@vagrant:~/kube/zad7$ kubectl apply -f pv-nfs.yaml
+persistentvolume/nfs-pv created
+vagrant@vagrant:~/kube/zad7$ kubectl apply -f nfs-pvc.yaml
+persistentvolumeclaim/nfs created
 vagrant@vagrant:~/kube/zad7$ kubectl apply -f multitool-deployment.yaml
 deployment.apps/multitool created
-vagrant@vagrant:~/kube/zad7$ kubectl apply -f - < pv-nfs.yaml
-storageclass.storage.k8s.io/nfs created
-vagrant@vagrant:~/kube/zad7$ kubectl apply -f - < nfs-pvc.yaml
-persistentvolumeclaim/pvc created
 vagrant@vagrant:~/kube/zad7$ kubectl get pvc
-NAME      STATUS   VOLUME   CAPACITY   ACCESS MODES   STORAGECLASS   AGE
-nfs-pvc   Bound    nfs-pv   1Gi        RWX            nfs-storage    10s
+NAME   STATUS   VOLUME   CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+nfs    Bound    nfs-pv   1Gi        RWX            nfs-storage    59s
 vagrant@vagrant:~/kube/zad7$ kubectl get pv
 NAME                            CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                                  STORAGECLASS   REASON   AGE
-data-nfs-server-provisioner-0   1Gi        RWO            Retain           Bound    nfs-server-provisioner/data-nfs-server-provisioner-0                           46h
-nfs-pv                          1Gi        RWX            Retain           Bound    default/nfs-pvc                                        nfs-storage             26s
+data-nfs-server-provisioner-0   1Gi        RWO            Retain           Bound    nfs-server-provisioner/data-nfs-server-provisioner-0                           11d
+nfs-pv                          1Gi        RWX            Retain           Bound    default/nfs                                            nfs-storage             75s
 vagrant@vagrant:~/kube/zad7$ kubectl get sc
 NAME                          PROVISIONER                            RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
-nfs-storage                   kubernetes.io/nfs                      Retain          Immediate              false                  2d23h
-nfs                           cluster.local/nfs-server-provisioner   Delete          Immediate              true                   2d22h
-microk8s-hostpath (default)   microk8s.io/hostpath                   Delete          WaitForFirstConsumer   false                  25h
+nfs-storage                   kubernetes.io/nfs                      Retain          Immediate              false                  11d
+nfs                           cluster.local/nfs-server-provisioner   Delete          Immediate              true                   11d
+microk8s-hostpath (default)   microk8s.io/hostpath                   Delete          WaitForFirstConsumer   false                  9d
+nfs-csi                       nfs.csi.k8s.io                         Delete          Immediate              false                  2m
 vagrant@vagrant:~/kube/zad7$ kubectl get pods -A
-NAMESPACE                NAME                                         READY   STATUS              RESTARTS          AGE
-default                  multitool-758994cbb6-lwtsw                   0/1     ContainerCreating   0                 26m
-kube-system              csi-nfs-node-5kdvx                           3/3     Running             4 (7m21s ago)     4d1h
-kube-system              hostpath-provisioner-7df77bc496-rnj86        1/1     Running             1 (7m30s ago)     25h
-nfs-server-provisioner   nfs-server-provisioner-0                     1/1     Running             1 (7m30s ago)     2d22h
-kube-system              kubernetes-dashboard-54b48fbf9-b4wq6         1/1     Running             33 (7m31s ago)    29d
-kube-system              dashboard-metrics-scraper-5657497c4c-6748c   1/1     Running             20 (7m31s ago)    29d
-kube-system              csi-nfs-controller-d96ccb59c-spqvp           4/4     Running             10 (4m52s ago)    4d1h
-kube-system              coredns-864597b5fd-5flhg                     1/1     Running             20 (7m30s ago)    29d
-kube-system              calico-kube-controllers-76c98cc5-t7mfl       1/1     Running             8 (7m21s ago)     9d
-kube-system              metrics-server-848968bdcd-7n9jf              1/1     Running             44 (7m21s ago)    29d
-kube-system              calico-node-sj2lr                            1/1     Running             13 (7m29s ago)    9d
-ingress                  nginx-ingress-microk8s-controller-csnhr      1/1     Running             1 (7m30s ago)     8d
-default                  multitool-pod                                1/1     Running             214 (7m29s ago)   9d
-default                  daemonset-l869k                              1/1     Running             1 (7m30s ago)     8d
+NAMESPACE                NAME                                         READY   STATUS              RESTARTS         AGE
+kube-system              csi-nfs-node-5kdvx                           3/3     Running             4 (8d ago)       12d
+nfs-server-provisioner   nfs-server-provisioner-0                     1/1     Running             1 (8d ago)       11d
+kube-system              kubernetes-dashboard-54b48fbf9-b4wq6         1/1     Running             33 (8d ago)      37d
+kube-system              dashboard-metrics-scraper-5657497c4c-6748c   1/1     Running             20 (8d ago)      37d
+kube-system              calico-kube-controllers-76c98cc5-t7mfl       1/1     Running             8 (8d ago)       17d
+kube-system              calico-node-sj2lr                            1/1     Running             13 (8d ago)      17d
+ingress                  nginx-ingress-microk8s-controller-csnhr      1/1     Running             1 (8d ago)       16d
+default                  daemonset-l869k                              1/1     Running             1 (8d ago)       16d
+kube-system              coredns-864597b5fd-5flhg                     1/1     Running             20 (8d ago)      37d
+kube-system              metrics-server-848968bdcd-7n9jf              1/1     Running             46 (5d4h ago)    37d
+kube-system              hostpath-provisioner-7df77bc496-rnj86        1/1     Running             11 (90m ago)     9d
+kube-system              csi-nfs-controller-d96ccb59c-spqvp           4/4     Running             20 (83m ago)     12d
+default                  multitool-pod                                0/1     ImagePullBackOff    376 (102m ago)   17d
+default                  multitool-7dd685cf9d-kx9b2                   0/2     ContainerCreating   0                109s
 ```
 ```
 vagrant@vagrant:/srv/nfs$ kubectl cluster-info
