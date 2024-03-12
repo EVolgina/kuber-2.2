@@ -134,9 +134,6 @@ ii  nfs-common                            1:1.3.4-2.5ubuntu3.5              amd6
 vagrant@vagrant:~/kube/zad7$ microk8s enable nfs
 Infer repository community for addon nfs
 Addon community/nfs is already enabled
-vagrant@vagrant:~/kube/zad7$ microk8s kubectl get pods -n kube-system | grep nfs
-csi-nfs-node-5kdvx                           3/3     Running   1 (116m ago)    130m
-csi-nfs-controller-d96ccb59c-spqvp           4/4     Running   1 (128m ago)    130m
 vagrant@vagrant:~/kube/zad7$ kubectl apply -f sc.yaml
 storageclass.storage.k8s.io/nfs-csi created
 vagrant@vagrant:~/kube/zad7$ kubectl apply -f pv-nfs.yaml
@@ -200,39 +197,41 @@ nfs-server-provisioner   ClusterIP   10.152.183.97   <none>        2049/TCP,2049
 ```
 -несколько раз пересоздавала pv pvc удаляла pod. Не могу найти причину почему pod не поднимается
 ```
-vagrant@vagrant:~/kube/zad7$ kubectl describe pvc nfs-pvc
-Name:          nfs-pvc
-Namespace:     default
-StorageClass:  nfs-storage
-Status:        Bound
-Volume:        nfs-pv
-Labels:        <none>
-Annotations:   pv.kubernetes.io/bind-completed: yes
-               pv.kubernetes.io/bound-by-controller: yes
-Finalizers:    [kubernetes.io/pvc-protection]
-Capacity:      1Gi
-Access Modes:  RWX
-VolumeMode:    Filesystem
-Used By:       multitool-758994cbb6-fgjzq
-Events:        <none>
-vagrant@vagrant:~/kube/zad7$ kubectl describe pod multitool-758994cbb6-fgjzq
-Name:             multitool-758994cbb6-fgjzq
+vagrant@vagrant:~/kube/zad7$ kubectl describe pods multitool-77497c5659-ftvkq
+Name:             multitool-77497c5659-ftvkq
 Namespace:        default
 Priority:         0
 Service Account:  default
 Node:             vagrant/10.0.2.15
-Start Time:       Mon, 04 Mar 2024 16:47:36 +0000
+Start Time:       Tue, 12 Mar 2024 16:47:04 +0000
 Labels:           app=multitool
-                  pod-template-hash=758994cbb6
+                  pod-template-hash=77497c5659
 Annotations:      <none>
 Status:           Pending
 IP:
 IPs:              <none>
-Controlled By:    ReplicaSet/multitool-758994cbb6
+Controlled By:    ReplicaSet/multitool-77497c5659
 Containers:
+  busybox:
+    Container ID:
+    Image:         busybox
+    Image ID:
+    Port:          <none>
+    Host Port:     <none>
+    Command:
+      /bin/sh
+      -c
+      while true; do date >> /srv/nfs/data.txt; sleep 5; done
+    State:          Waiting
+      Reason:       ContainerCreating
+    Ready:          False
+    Restart Count:  0
+    Environment:    <none>
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-kb5bq (ro)
   multitool:
     Container ID:
-    Image:          wbitt/network-multitool
+    Image:          wbitt/network-multitool:latest
     Image ID:
     Port:           <none>
     Host Port:      <none>
@@ -243,7 +242,7 @@ Containers:
     Environment:    <none>
     Mounts:
       /srv/nfs from nfs-storage (rw)
-      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-n5bhd (ro)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-kb5bq (ro)
 Conditions:
   Type              Status
   Initialized       True
@@ -253,9 +252,9 @@ Conditions:
 Volumes:
   nfs-storage:
     Type:       PersistentVolumeClaim (a reference to a PersistentVolumeClaim in the same namespace)
-    ClaimName:  nfs-pvc
+    ClaimName:  nfs
     ReadOnly:   false
-  kube-api-access-n5bhd:
+  kube-api-access-kb5bq:
     Type:                    Projected (a volume that contains injected data from multiple sources)
     TokenExpirationSeconds:  3607
     ConfigMapName:           kube-root-ca.crt
@@ -266,11 +265,11 @@ Node-Selectors:              <none>
 Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
                              node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
 Events:
-  Type     Reason       Age    From               Message
-  ----     ------       ----   ----               -------
-  Normal   Scheduled    3m38s  default-scheduler  Successfully assigned default/multitool-758994cbb6-fgjzq to vagrant
-  Warning  FailedMount  93s    kubelet            MountVolume.SetUp failed for volume "nfs-pv" : mount failed: exit status 32
+  Type     Reason       Age               From               Message
+  ----     ------       ----              ----               -------
+  Normal   Scheduled    78s               default-scheduler  Successfully assigned default/multitool-77497c5659-ftvkq to vagrant
+  Warning  FailedMount  5s (x8 over 78s)  kubelet            MountVolume.SetUp failed for volume "nfs-pv" : mount failed: exit status 32
 Mounting command: mount
-Mounting arguments: -t nfs nfs-server-provisioner.default.svc.cluster.local:/srv/nfs /var/snap/microk8s/common/var/lib/kubelet/pods/905259c1-36cf-42d2-8acf-dc4d80391418/volumes/kubernetes.io~nfs/nfs-pv
-Output: mount.nfs: Connection timed out
+Mounting arguments: -t nfs 10.152.183.97:/srv/nfs /var/snap/microk8s/common/var/lib/kubelet/pods/d6407e9f-013a-40b7-ac69-ac8ac4ae6f4d/volumes/kubernetes.io~nfs/nfs-pv
+Output: mount.nfs: access denied by server while mounting 10.152.183.97:/srv/nfs
 ```
