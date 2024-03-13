@@ -13,18 +13,18 @@ spec:
         app: multitool
     spec:
       containers:
-      - name: busybox
-        image: busybox
-        command: ["/bin/sh", "-c", "while true; do date >> /srv/nfs/data.txt; sleep 5; done"]
-      - name: multitool
-        image: wbitt/network-multitool
-        volumeMounts:
-        - name: nfs-storage
-          mountPath: /srv/nfs
+        - name: busybox
+          image: busybox
+          command: ["/bin/sh", "-c", "while true; do date >> /srv/nfs/data.txt; sleep 5; done"]
+          volumeMounts:
+            - name: nfs-volume
+              mountPath: /srv/nfs
+        - name: multitool
+          image: wbitt/network-multitool:latest
+          volumeMounts:
+            - name: nfs-volume
+              mountPath: /srv/nfs
       volumes:
-        - name: nfs-storage
+        - name: nfs-volume
           persistentVolumeClaim:
-            claimName: nfs
-
-          
-
+            claimName: nfs-pvc
