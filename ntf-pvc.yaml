@@ -1,5 +1,5 @@
-kind: PersistentVolumeClaim
 apiVersion: v1
+kind: PersistentVolumeClaim
 metadata:
   name: pvc-nfs
   labels:
@@ -12,3 +12,4 @@ spec:
   resources:
     requests:
       storage: 1Gi
+
