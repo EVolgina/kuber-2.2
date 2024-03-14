@@ -27,4 +27,4 @@ spec:
       volumes:
         - name: nfs-volume
           persistentVolumeClaim:
-            claimName: nfs
+            claimName: pvc-nfs
