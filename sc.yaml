@@ -1,22 +1,17 @@
 # Sc.yaml
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: nfs-pv
-spec:
-  capacity:
-    storage: 1Gi
-  volumeMode: Filesystem
-  accessModes:
-    - ReadWriteMany
-  persistentVolumeReclaimPolicy: Retain
-  storageClassName: nfs-storage
-  nfs:
-    path: /srv/nfs
-    server: 10.152.183.97
----
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
   name: nfs-storage
 provisioner: kubernetes.io/nfs
+parameters:
+  server: 10.152.183.97
+  share: /srv/nfs
+reclaimPolicy: Delete
+volumeBindingMode: Immediate
+mountOptions:
+  - hard
+  - nfsvers=4.1
+  
+
+
