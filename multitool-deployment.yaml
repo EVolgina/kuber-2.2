@@ -16,15 +16,28 @@ spec:
         - name: busybox
           image: busybox
           command: ["/bin/sh", "-c", "while true; do date >> /srv/nfs/data.txt; sleep 5; done"]
-          volumeMounts:
-            - name: nfs-volume
+           volumeMounts:
+            - name: nfs-storage
               mountPath: /srv/nfs
         - name: multitool
           image: wbitt/network-multitool:latest
           volumeMounts:
-            - name: nfs-volume
+            - name: nfs-storage
               mountPath: /srv/nfs
+          env:
+            - name: HTTP_PORT
+              value: "80"
+          ports:
+            - containerPort: 80
+              name: http-port
+          resources:
+            requests:
+              cpu: "1m"
+              memory: "20Mi"
+            limits:
+              cpu: "10m"
+              memory: "20Mi"
       volumes:
-        - name: nfs-volume
+        - name: nfs-storage
           persistentVolumeClaim:
             claimName: pvc-nfs
