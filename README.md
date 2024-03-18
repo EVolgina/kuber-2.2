@@ -142,75 +142,35 @@ vagrant@vagrant:~/kube/zad7$ kubectl apply -f nfs-pvc.yaml
 persistentvolumeclaim/nfs created
 vagrant@vagrant:~/kube/zad7$ kubectl apply -f multitool-deployment.yaml
 deployment.apps/multitool created
-vagrant@vagrant:~/kube/zad7$ kubectl get pvc
-NAME   STATUS   VOLUME   CAPACITY   ACCESS MODES   STORAGECLASS   AGE
-nfs    Bound    nfs-pv   1Gi        RWX            nfs-storage    59s
 vagrant@vagrant:~/kube/zad7$ kubectl get pv
-NAME                            CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                                  STORAGECLASS   REASON   AGE
-data-nfs-server-provisioner-0   1Gi        RWO            Retain           Bound    nfs-server-provisioner/data-nfs-server-provisioner-0                           11d
-nfs-pv                          1Gi        RWX            Retain           Bound    default/nfs                                            nfs-storage             75s
-vagrant@vagrant:~/kube/zad7$ kubectl get sc
-NAME                          PROVISIONER                            RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
-nfs-storage                   kubernetes.io/nfs                      Retain          Immediate              false                  11d
-nfs                           cluster.local/nfs-server-provisioner   Delete          Immediate              true                   11d
-microk8s-hostpath (default)   microk8s.io/hostpath                   Delete          WaitForFirstConsumer   false                  9d
-nfs-csi                       nfs.csi.k8s.io                         Delete          Immediate              false                  2m
-vagrant@vagrant:~/kube/zad7$ kubectl get pods -A
-NAMESPACE                NAME                                         READY   STATUS              RESTARTS         AGE
-kube-system              csi-nfs-node-5kdvx                           3/3     Running             4 (8d ago)       12d
-nfs-server-provisioner   nfs-server-provisioner-0                     1/1     Running             1 (8d ago)       11d
-kube-system              kubernetes-dashboard-54b48fbf9-b4wq6         1/1     Running             33 (8d ago)      37d
-kube-system              dashboard-metrics-scraper-5657497c4c-6748c   1/1     Running             20 (8d ago)      37d
-kube-system              calico-kube-controllers-76c98cc5-t7mfl       1/1     Running             8 (8d ago)       17d
-kube-system              calico-node-sj2lr                            1/1     Running             13 (8d ago)      17d
-ingress                  nginx-ingress-microk8s-controller-csnhr      1/1     Running             1 (8d ago)       16d
-default                  daemonset-l869k                              1/1     Running             1 (8d ago)       16d
-kube-system              coredns-864597b5fd-5flhg                     1/1     Running             20 (8d ago)      37d
-kube-system              metrics-server-848968bdcd-7n9jf              1/1     Running             46 (5d4h ago)    37d
-kube-system              hostpath-provisioner-7df77bc496-rnj86        1/1     Running             11 (90m ago)     9d
-kube-system              csi-nfs-controller-d96ccb59c-spqvp           4/4     Running             20 (83m ago)     12d
-default                  multitool-pod                                0/1     ImagePullBackOff    376 (102m ago)   17d
-default                  multitool-7dd685cf9d-kx9b2                   0/2     ContainerCreating   0                109s
-```
-```
-vagrant@vagrant:/srv/nfs$ kubectl cluster-info
-Kubernetes control plane is running at https://10.0.2.15:16443
-CoreDNS is running at https://10.0.2.15:16443/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
-
-To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
-vagrant@vagrant:/srv/nfs$ kubectl get services --all-namespaces
-vagrant@vagrant:~/kube/zad7$ kubectl get services --all-namespaces
-NAMESPACE                NAME                        TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)                                                                                                     AGE
-default                  kubernetes                  ClusterIP   10.152.183.1     <none>        443/TCP                                                                                                     28d
-kube-system              kube-dns                    ClusterIP   10.152.183.10    <none>        53/UDP,53/TCP,9153/TCP                                                                                      28d
-kube-system              metrics-server              ClusterIP   10.152.183.59    <none>        443/TCP                                                                                                     28d
-kube-system              kubernetes-dashboard        ClusterIP   10.152.183.110   <none>        443/TCP                                                                                                     28d
-kube-system              dashboard-metrics-scraper   ClusterIP   10.152.183.252   <none>        8000/TCP                                                                                                    28d
-default                  my-service                  ClusterIP   10.152.183.48    <none>        9001/TCP,9002/TCP                                                                                           8d
-default                  my-service1                 NodePort    10.152.183.118   <none>        80:30080/TCP                                                                                                8d
-default                  svc-back                    ClusterIP   10.152.183.107   <none>        80/TCP                                                                                                      7d7h
-default                  svc-front                   ClusterIP   10.152.183.79    <none>        80/TCP                                                                                                      7d7h
-nfs-server-provisioner   nfs-server-provisioner      ClusterIP   10.152.183.97    <none>        2049/TCP,2049/UDP,32803/TCP,32803/UDP,20048/TCP,20048/UDP,875/TCP,875/UDP,111/TCP,111/UDP,662/TCP,662/UDP   46h
-vagrant@vagrant:~/kube/zad7$ kubectl get services --namespace nfs-server-provisioner
-NAME                     TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                                                                                                     AGE
-nfs-server-provisioner   ClusterIP   10.152.183.97   <none>        2049/TCP,2049/UDP,32803/TCP,32803/UDP,20048/TCP,20048/UDP,875/TCP,875/UDP,111/TCP,111/UDP,662/TCP,662/UDP   46h
-```
--несколько раз пересоздавала pv pvc удаляла pod. Не могу найти причину почему pod не поднимается
-```
-vagrant@vagrant:~/kube/zad7$ kubectl describe pods multitool-77497c5659-ftvkq
-Name:             multitool-77497c5659-ftvkq
+NAME                            CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS        CLAIM                                                  STORAGECLASS   REASON   AGE
+data-nfs-server-provisioner-0   1Gi        RWO            Retain           Terminating   nfs-server-provisioner/data-nfs-server-provisioner-0                           16d
+nfs-pv                          1Gi        RWX            Retain           Bound         default/pvc-nfs                                        nfs-storage             49s
+vagrant@vagrant:~/kube/zad7$ kubectl get pvc
+NAME      STATUS   VOLUME   CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+pvc-nfs   Bound    nfs-pv   1Gi        RWX            nfs-storage    46s
+vagrant@vagrant:~/kube/zad7$ kubectl get pods
+NAME                         READY   STATUS              RESTARTS   AGE
+daemonset-5hmlm              1/1     Running             0          3d12h
+multitool-8575674c98-jf2df   0/2     ContainerCreating   0          43s
+vagrant@vagrant:~/kube/zad7$ kubectl get pods
+NAME                         READY   STATUS              RESTARTS   AGE
+daemonset-5hmlm              1/1     Running             0          3d12h
+multitool-8575674c98-jf2df   0/2     ContainerCreating   0          72s
+vagrant@vagrant:~/kube/zad7$ kubectl describe pod multitool-8575674c98-jf2df
+Name:             multitool-8575674c98-jf2df
 Namespace:        default
 Priority:         0
 Service Account:  default
 Node:             vagrant/10.0.2.15
-Start Time:       Tue, 12 Mar 2024 16:47:04 +0000
+Start Time:       Mon, 18 Mar 2024 05:13:53 +0000
 Labels:           app=multitool
-                  pod-template-hash=77497c5659
+                  pod-template-hash=8575674c98
 Annotations:      <none>
 Status:           Pending
 IP:
 IPs:              <none>
-Controlled By:    ReplicaSet/multitool-77497c5659
+Controlled By:    ReplicaSet/multitool-8575674c98
 Containers:
   busybox:
     Container ID:
@@ -228,21 +188,29 @@ Containers:
     Restart Count:  0
     Environment:    <none>
     Mounts:
-      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-kb5bq (ro)
+      /srv/nfs from nfs-storage (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-qw895 (ro)
   multitool:
     Container ID:
     Image:          wbitt/network-multitool:latest
     Image ID:
-    Port:           <none>
-    Host Port:      <none>
+    Port:           80/TCP
+    Host Port:      0/TCP
     State:          Waiting
       Reason:       ContainerCreating
     Ready:          False
     Restart Count:  0
-    Environment:    <none>
+    Limits:
+      cpu:     10m
+      memory:  20Mi
+    Requests:
+      cpu:     1m
+      memory:  20Mi
+    Environment:
+      HTTP_PORT:  80
     Mounts:
       /srv/nfs from nfs-storage (rw)
-      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-kb5bq (ro)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-qw895 (ro)
 Conditions:
   Type              Status
   Initialized       True
@@ -252,24 +220,67 @@ Conditions:
 Volumes:
   nfs-storage:
     Type:       PersistentVolumeClaim (a reference to a PersistentVolumeClaim in the same namespace)
-    ClaimName:  nfs
+    ClaimName:  pvc-nfs
     ReadOnly:   false
-  kube-api-access-kb5bq:
+  kube-api-access-qw895:
     Type:                    Projected (a volume that contains injected data from multiple sources)
     TokenExpirationSeconds:  3607
     ConfigMapName:           kube-root-ca.crt
     ConfigMapOptional:       <nil>
     DownwardAPI:             true
-QoS Class:                   BestEffort
+QoS Class:                   Burstable
 Node-Selectors:              <none>
 Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
                              node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
 Events:
-  Type     Reason       Age               From               Message
-  ----     ------       ----              ----               -------
-  Normal   Scheduled    78s               default-scheduler  Successfully assigned default/multitool-77497c5659-ftvkq to vagrant
-  Warning  FailedMount  5s (x8 over 78s)  kubelet            MountVolume.SetUp failed for volume "nfs-pv" : mount failed: exit status 32
+  Type     Reason       Age                From               Message
+  ----     ------       ----               ----               -------
+  Normal   Scheduled    92s                default-scheduler  Successfully assigned default/multitool-8575674c98-jf2df to vagrant
+  Warning  FailedMount  21s (x8 over 87s)  kubelet            MountVolume.SetUp failed for volume "nfs-pv" : mount failed: exit status 32
 Mounting command: mount
-Mounting arguments: -t nfs 10.152.183.97:/srv/nfs /var/snap/microk8s/common/var/lib/kubelet/pods/d6407e9f-013a-40b7-ac69-ac8ac4ae6f4d/volumes/kubernetes.io~nfs/nfs-pv
+Mounting arguments: -t nfs 10.152.183.97:/srv/nfs /var/snap/microk8s/common/var/lib/kubelet/pods/cfce1acb-e084-43fe-9018-92f080c5d8de/volumes/kubernetes.io~nfs/nfs-pv
 Output: mount.nfs: access denied by server while mounting 10.152.183.97:/srv/nfs
+vagrant@vagrant:~/kube/zad7$ kubectl get sc
+NAME          PROVISIONER         RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
+nfs-storage   kubernetes.io/nfs   Delete          Immediate           false                  3d13h
+vagrant@vagrant:~/kube/zad7$ kubectl describe sc nfs-storage
+Name:            nfs-storage
+IsDefaultClass:  No
+Annotations:     kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"storage.k8s.io/v1","kind":"StorageClass","metadata":{"annotations":{},"name":"nfs-storage"},"mountOptions":["hard","nfsvers=4.1"],"parameters":{"path":"/srv/nfs","server":"10.152.183.97"},"provisioner":"kubernetes.io/nfs","reclaimPolicy":"Delete","volumeBindingMode":"Immediate"}
+
+Provisioner:           kubernetes.io/nfs
+Parameters:            path=/srv/nfs,server=10.152.183.97
+AllowVolumeExpansion:  <unset>
+MountOptions:
+  hard
+  nfsvers=4.1
+ReclaimPolicy:      Delete
+VolumeBindingMode:  Immediate
+Events:             <none>
+```
+```
+vagrant@vagrant:/srv/nfs$ kubectl cluster-info
+Kubernetes control plane is running at https://10.0.2.15:16443
+CoreDNS is running at https://10.0.2.15:16443/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
+
+To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
+vagrant@vagrant:/srv/nfs$ kubectl get services --all-namespaces
+vagrant@vagrant:~/kube/zad7$ kubectl get services --all-namespaces
+NAMESPACE                NAME                        TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)                                                                                                     AGE
+default                  kubernetes                  ClusterIP   10.152.183.1     <none>        443/TCP                                                                                                     42d
+kube-system              kube-dns                    ClusterIP   10.152.183.10    <none>        53/UDP,53/TCP,9153/TCP                                                                                      42d
+kube-system              metrics-server              ClusterIP   10.152.183.59    <none>        443/TCP                                                                                                     42d
+kube-system              kubernetes-dashboard        ClusterIP   10.152.183.110   <none>        443/TCP                                                                                                     42d
+kube-system              dashboard-metrics-scraper   ClusterIP   10.152.183.252   <none>        8000/TCP                                                                                                    42d
+default                  my-service                  ClusterIP   10.152.183.48    <none>        9001/TCP,9002/TCP                                                                                           22d
+default                  my-service1                 NodePort    10.152.183.118   <none>        80:30080/TCP                                                                                                22d
+default                  svc-back                    ClusterIP   10.152.183.107   <none>        80/TCP                                                                                                      21d
+default                  svc-front                   ClusterIP   10.152.183.79    <none>        80/TCP                                                                                                      21d
+nfs-server-provisioner   nfs-server-provisioner      ClusterIP   10.152.183.97    <none>        2049/TCP,2049/UDP,32803/TCP,32803/UDP,20048/TCP,20048/UDP,875/TCP,875/UDP,111/TCP,111/UDP,662/TCP,662/UDP   16d
+vagrant@vagrant:~/kube/zad7$ kubectl get services --namespace nfs-server-provisioner
+NAME                     TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                                                                                                     AGE
+nfs-server-provisioner   ClusterIP   10.152.183.97   <none>        2049/TCP,2049/UDP,32803/TCP,32803/UDP,20048/TCP,20048/UDP,875/TCP,875/UDP,111/TCP,111/UDP,662/TCP,662/UDP   46h
+```
+-несколько раз пересоздавала pv pvc удаляла pod. Не могу найти причину почему pod не поднимается
+```
 ```
